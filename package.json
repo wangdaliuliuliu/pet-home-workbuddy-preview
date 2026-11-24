@@ -1,0 +1,20 @@
+{
+  "name": "zuanzuan-pet",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "start:local": "node scripts/start-local.js",
+    "start:codex": "node scripts/start-local.js --codex --open",
+    "start:workbuddy": "node scripts/start-local.js --workbuddy --open",
+    "setup:local": "node scripts/setup-local.js",
+    "install:local": "node scripts/install-local.js",
+    "install:workbuddy": "node scripts/install-local.js workbuddy-desktop",
+    "backup:local": "node scripts/local-backup.js backup",
+    "restore:local": "node scripts/local-backup.js restore",
+    "install:local-voice": "node scripts/install-local-voice.js",
+    "test": "node --test test/*.test.js",
+    "check:evolution": "node scripts/check-evolution.js",
+    "studio": "node job-studio-server.js"
+  }
+}

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>今日进度</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --line:#e6e8ec; --text:#1d2129; --muted:#8a9099;
+    --ok:#2f7d5f; --okbg:#eaf5f0; --wait:#a9701a; --waitbg:#fdf3e3; --bad:#b23b3b; --badbg:#fbeded;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  header{padding:16px 16px 8px;max-width:720px;margin:0 auto}
+  .date{font-size:22px;font-weight:600;letter-spacing:.3px}
+  .meta{margin-top:2px;color:var(--muted);font-size:12px}
+  main{max-width:720px;margin:0 auto;padding:0 16px 40px}
+  section{margin-top:18px}
+  h2{margin:0 0 8px;font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+  .tag{font-weight:500;color:var(--ok);background:var(--okbg);border-radius:99px;padding:1px 8px;font-size:12px;letter-spacing:0}
+  .list{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row.dim{background:#fbfbfc}
+  .dot{width:8px;height:8px;border-radius:99px;background:#cfd4db;flex:none}
+  .row.done .dot{background:var(--ok);box-shadow:0 0 0 3px var(--okbg)}
+  .who{min-width:0;flex:1}
+  .name{font-weight:600}
+  .sub{color:var(--muted);font-size:12px;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .right{text-align:right;flex:none}
+  .num{font-weight:600;color:var(--ok)}
+  .none{color:var(--muted);font-size:12px}
+  .pill{display:inline-block;border-radius:99px;padding:2px 8px;font-size:12px;letter-spacing:.2px}
+  .s-ready{color:var(--ok);background:var(--okbg)}
+  .s-run{color:var(--wait);background:var(--waitbg)}
+  .s-bad{color:var(--bad);background:var(--badbg)}
+  .empty{padding:16px 14px;color:var(--muted);font-size:13px}
+  .arrow{color:var(--muted);padding:0 2px}
+  @media(max-width:420px){ .date{font-size:19px} .row{padding:10px 12px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="date" id="date">—</div>
+  <div class="meta"><span id="updated">加载中…</span> · 每 8 秒自动刷新</div>
+</header>
+<main>
+  <section>
+    <h2>今日读书 <span class="tag" id="tag">—</span></h2>
+    <div class="list" id="people"><div class="empty">加载中…</div></div>
+  </section>
+  <section>
+    <h2>今天的串门故事</h2>
+    <div class="list" id="shown"><div class="empty">加载中…</div></div>
+  </section>
+  <section>
+    <h2>今天预约 · 明天生效</h2>
+    <div class="list" id="queued"><div class="empty">加载中…</div></div>
+  </section>
+</main>
+<script>
+(function(){
+  var DATA = '/ops-data-7d3f';
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(value){
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function clock(){
+    return new Intl.DateTimeFormat('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+  }
+  function statusPill(status){
+    if(status === 'ready') return '<span class="pill s-ready">完成</span>';
+    if(status === 'failed') return '<span class="pill s-bad">失败</span>';
+    return '<span class="pill s-run">生成中</span>';
+  }
+  function renderPeople(people){
+    var done = people.filter(function(p){ return p.readToday > 0; }).length;
+    $('tag').textContent = done + ' / ' + people.length + ' 已读';
+    if(!people.length){ $('people').innerHTML = '<div class="empty">还没有账号</div>'; return; }
+    $('people').innerHTML = people.map(function(p){
+      var ok = p.readToday > 0;
+      var sub = ok
+        ? '最近：' + esc(p.lastTitle || '（无标题）') + (p.lastAt ? ' · ' + esc(p.lastAt) : '')
+        : '今天还没有保存故事';
+      var right = ok
+        ? '<div class="num">' + p.readToday + ' 篇</div><div class="sub">体力 ' + p.visitCredit + '</div>'
+        : '<div class="none">未读</div>';
+      return '<div class="row ' + (ok ? 'done' : 'dim') + '">'
+        + '<span class="dot"></span>'
+        + '<div class="who"><div class="name">' + esc(p.petName) + '</div><div class="sub">' + esc(p.childName) + (p.login ? ' · ' + esc(p.login) : '') + '</div>'
+        + '<div class="sub">' + sub + '</div></div>'
+        + '<div class="right">' + right + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  function renderVisits(el, rows){
+    if(!rows.length){ el.innerHTML = '<div class="empty">暂无</div>'; return; }
+    el.innerHTML = rows.map(function(v){
+      return '<div class="row">'
+        + '<div class="who"><div class="name">' + esc(v.from) + ' <span class="arrow">→</span> ' + esc(v.to) + '</div>'
+        + '<div class="sub">' + esc(v.title || v.place || '还没有故事') + '</div></div>'
+        + '<div class="right">' + statusPill(v.status) + '</div>'
+        + '</div>';
+    }).join('');
+  }
+  function render(data){
+    $('date').textContent = data.date;
+    renderPeople(data.people || []);
+    renderVisits($('shown'), data.visits && data.visits.shown || []);
+    renderVisits($('queued'), data.visits && data.visits.queued || []);
+    $('updated').textContent = '更新于 ' + clock();
+  }
+  function load(){
+    fetch(DATA, { cache: 'no-store' })
+      .then(function(r){ if(!r.ok) throw new Error('bad'); return r.json(); })
+      .then(render)
+      .catch(function(){ $('updated').textContent = '连不上，自动重试中…'; });
+  }
+  load();
+  setInterval(load, 8000);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) load(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!doctype html><html lang="zh-CN"><head><script src="/production-health.js"></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#f9f6ed"><title>奇遇事务所 · 小朋友的工作广场</title><link rel="stylesheet" href="/work-square.css"></head><body>
+<header class="topbar"><a href="/" class="home-link">⌂ <span>宠物小家</span></a><a href="/account" id="identity" class="identity">我的名字</a></header>
+<main><header class="square-heading"><div><div class="name-label"><span>✦</span> 奇遇事务所</div><h1>你的点子，<br class="mobile-break">让宠物来上班！</h1></div><a href="/studio" class="publish"><span>＋</span> 分享我的工作</a></header>
+<section class="work-board" aria-labelledby="board-title"><div class="board-head"><div><h2 id="board-title">新工作来啦 <span class="new-sticker">NEW!</span></h2><p>新点子先见面，快来当第一个试试的人。</p></div><button id="open-ranking" class="ranking-button">✧ 热门工作 <span>↗</span></button></div>
+<div class="browse-tools"><label class="search"><span>⌕</span><input id="search" type="search" placeholder="找工作 / 找小朋友" aria-label="找工作或小朋友"></label></div>
+<p id="result-count" class="result-count" role="status"></p><div id="works" class="work-grid"><p class="empty">正在打开工作广场…</p></div><nav id="pagination" class="pagination" aria-label="工作列表翻页"></nav></section>
+<footer><span>每一个新点子，都有被看见的机会。</span><a href="/studio">我也来设计一个 ↗</a></footer></main>
+<dialog id="work-detail" aria-labelledby="detail-title"><button class="close" data-close="work-detail" aria-label="关闭介绍">×</button><div id="detail-content"></div></dialog>
+<dialog id="ranking" class="ranking-drawer" aria-labelledby="ranking-title"><button class="close" data-close="ranking" aria-label="关闭热门工作">×</button><div class="drawer-handle"></div><span class="drawer-label">大家都在玩什么？</span><h2 id="ranking-title">热门工作</h2><p class="ranking-note">大家玩得多的排在前面。</p><div id="ranking-list"></div><nav id="ranking-pages" class="pagination" aria-label="热门排行翻页"></nav></dialog>
+<div id="notice" role="status" hidden></div><script src="/office.js"></script></body></html>

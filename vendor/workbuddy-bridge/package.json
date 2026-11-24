@@ -1,0 +1,15 @@
+{
+  "name": "workbuddy-bridge",
+  "version": "2.3.0",
+  "license": "MIT",
+  "private": true,
+  "description": "Local WorkBuddy tools shared by Codex and ChatGPT Work desktop through MCP.",
+  "type": "module",
+  "main": "./index.js",
+  "exports": { ".": "./index.js", "./dsh": "./dsh-adapter.js" },
+  "bin": { "workbuddy-bridge": "./bin/cli.mjs", "workbuddy-bridge-mcp": "./bin/mcp.mjs" },
+  "scripts": { "test": "node --test tests/*.test.mjs", "start": "node bin/mcp.mjs", "doctor": "node bin/cli.mjs doctor" },
+  "files": ["index.js", "dsh-adapter.js", "lib/", "bin/", "skills/", ".codex-plugin/", ".mcp.json", "plugin.json", "mcp.json", "icon.svg", "README.md", "NOTICE.md", "docs/"],
+  "engines": { "node": ">=22.13.0" },
+  "os": ["win32"]
+}

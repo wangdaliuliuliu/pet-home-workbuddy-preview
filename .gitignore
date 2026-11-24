@@ -1,0 +1,14 @@
+data/
+node_modules/
+*.log
+.env
+apiKey-*.csv
+/*.private.md
+.tools/
+deploy/app.tar.gz
+
+# Local previews, release snapshots and private verification artifacts
+/output/
+/preview/
+*.tar.gz
+*.bundle
