@@ -38,6 +38,24 @@ function writeInputs(dir,images){
   });
 }
 
+function copyImageResult(dir,output,files,destination){
+  let source=output;
+  if(!fs.existsSync(source)){
+    const candidates=fs.readdirSync(dir,{withFileTypes:true})
+      .filter(entry=>entry.isFile()&&/\.png$/i.test(entry.name))
+      .map(entry=>path.join(dir,entry.name)).filter(file=>!files.includes(file));
+    if(candidates.length===1)source=candidates[0];
+  }
+  const info=fs.lstatSync(source,{throwIfNoEntry:false});
+  if(!info?.isFile()||info.isSymbolicLink()||info.size<1024||info.size>24*1024*1024)
+    throw problem('workbuddy_image_missing','WorkBuddy 没有返回完整的 PNG 配图。');
+  const bytes=fs.readFileSync(source);
+  if(!bytes.subarray(0,8).equals(png))throw problem('workbuddy_image_format','WorkBuddy 返回的图片格式不正确。');
+  fs.writeFileSync(destination+'.tmp',bytes);
+  fs.renameSync(destination+'.tmp',destination);
+  return destination;
+}
+
 async function runTask({dir,prompt,images,signal,destination,onStart},client){
   const ready=await client.callTool('workbuddy_status',{launch:false});
   if(!ready.ok)throw problem('workbuddy_desktop_offline','请先保存 WorkBuddy 的工作并退出，再双击桌面的「宠物小家 WorkBuddy 试用版」。');
@@ -67,14 +85,7 @@ async function runTask({dir,prompt,images,signal,destination,onStart},client){
       if(/^session: [^\n]+ · completed(?:\r?\n|$)/i.test(result.text||'')){
         finished=true;
         if(!destination)return result.answer;
-        const info=fs.lstatSync(output,{throwIfNoEntry:false});
-        if(!info?.isFile()||info.isSymbolicLink()||info.size<1024||info.size>24*1024*1024)
-          throw problem('workbuddy_image_missing','WorkBuddy 没有返回完整的 PNG 配图。');
-        const bytes=fs.readFileSync(output);
-        if(!bytes.subarray(0,8).equals(png))throw problem('workbuddy_image_format','WorkBuddy 返回的图片格式不正确。');
-        fs.writeFileSync(destination+'.tmp',bytes);
-        fs.renameSync(destination+'.tmp',destination);
-        return destination;
+        return copyImageResult(dir,output,files,destination);
       }
       if(/^session: [^\n]+ · (?:failed|cancelled|canceled|interrupted)(?:\r?\n|$)/i.test(result.text||'')){
         finished=true;
@@ -94,4 +105,4 @@ async function execute(input){
   finally{release();}
 }
 
-module.exports={available,active,status,execute,runTask};
+module.exports={available,active,status,execute,runTask,copyImageResult};
